@@ -2,57 +2,61 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prawnsort - ระบบกล้อง AI ตรวจจับกุ้งฝอย</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prawnsort - ระบบส่องกุ้งฝอยหน้าฟาร์ม</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Prompt', sans-serif; }</style>
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-2 sm:p-4 select-none">
+<body class="bg-slate-950 text-white h-screen w-screen overflow-hidden flex p-2 sm:p-3 select-none">
 
-    <div class="w-full max-w-5xl min-h-[85vh] bg-slate-900 rounded-3xl border border-slate-800 p-3 sm:p-4 flex flex-col md:flex-row gap-4 shadow-2xl">
+    <!-- คอนเทนเนอร์หลักบังคับแนวนอน ล็อคขนาดพอดีจอ 100% -->
+    <div class="w-full h-full bg-slate-900 rounded-2xl border border-slate-800 p-2 sm:p-3 flex flex-row gap-3 shadow-2xl">
         
-        <!-- ฝั่งซ้าย: กล้องส่องสด -->
-        <div class="relative flex-1 bg-black rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center min-h-[300px]">
+        <!-- ฝั่งซ้าย: หน้าจอกล้องส่องสด (เต็มพื้นที่ฝั่งซ้าย) -->
+        <div class="relative flex-1 h-full bg-black rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
             <video id="cameraStream" autoplay playsinline class="w-full h-full object-cover"></video>
             <img id="imagePreview" class="w-full h-full object-cover hidden" alt="Captured Shrimp">
             <canvas id="canvas" class="hidden"></canvas>
 
+            <!-- กรอบเป้าเล็งส่องกุ้ง -->
             <div id="targetGuide" class="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <div class="w-64 h-40 border-2 border-emerald-400/60 rounded-2xl border-dashed flex items-center justify-center bg-emerald-500/5">
-                    <span class="text-xs text-emerald-300 bg-slate-950/80 px-3 py-1 rounded-full shadow-lg">วางกุ้ง 1 ตัวให้อยู่ในกรอบนี้</span>
+                <div class="w-56 h-36 border-2 border-emerald-400/80 rounded-xl border-dashed flex items-center justify-center bg-emerald-500/5 shadow-inner">
+                    <span class="text-[11px] text-emerald-300 bg-slate-950/90 px-2.5 py-1 rounded-full border border-emerald-500/30">วางกุ้ง 1 ตัวในกรอบ</span>
                 </div>
             </div>
 
-            <div class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 border border-slate-700">
-                <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="statusText">กล้องส่องกุ้งพร้อมทำงาน</span>
+            <!-- สถานะกล้อง -->
+            <div class="absolute top-2 left-2 bg-slate-900/90 backdrop-blur px-2.5 py-1 rounded-full text-[11px] font-medium flex items-center gap-1.5 border border-slate-700">
+                <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="statusText">กล้องพร้อมทำงาน</span>
             </div>
         </div>
 
-        <!-- ฝั่งขวา: แสดงผลและควบคุม -->
-        <div class="w-full md:w-96 flex flex-col justify-between bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80">
-            <div>
-                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl">🦐</span>
-                        <h1 class="font-bold text-lg text-emerald-400">Prawnsort</h1>
+        <!-- ฝั่งขวา: แผงควบคุมและแสดงผล (ความกว้างคงที่เหมาะกับแนวนอน) -->
+        <div class="w-80 h-full flex flex-col justify-between bg-slate-950/90 rounded-xl p-3 border border-slate-800/80">
+            <div class="flex flex-col h-full justify-between">
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xl">🦐</span>
+                        <h1 class="font-bold text-base text-emerald-400">Prawnsort</h1>
                     </div>
-                    <span class="text-[11px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">ส่องกุ้งทีละตัว</span>
+                    <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800">โหมดแนวนอนหน้าฟาร์ม</span>
                 </div>
 
                 <!-- กล่องแสดงผลการวิเคราะห์ -->
-                <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 min-h-[200px] flex flex-col justify-center">
-                    <h3 class="text-xs text-slate-400 mb-2 font-medium">ผลการวิเคราะห์ AI & พยากรณ์วันฟัก:</h3>
-                    <div id="resultContainer" class="space-y-2">
-                        <p class="text-sm text-slate-400 italic text-center">จัดตำแหน่งกุ้งในกรอบ แล้วกดถ่ายรูปเพื่อวิเคราะห์</p>
+                <div class="my-2 flex-1 bg-slate-900/90 rounded-lg p-3 border border-slate-800 flex flex-col justify-center overflow-y-auto">
+                    <h3 class="text-[11px] text-slate-400 mb-1.5 font-medium">ผลการวิเคราะห์ AI & พยากรณ์วันฟัก:</h3>
+                    <div id="resultContainer">
+                        <p class="text-xs text-slate-400 italic text-center">วางกุ้งในกรอบ แล้วกดปุ่มถ่ายรูป</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- ปุ่มควบคุมหลัก -->
-            <div class="mt-4">
-                <button id="actionBtn" onclick="handleAction()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base">
+                <!-- ปุ่มควบคุมหลัก -->
+                <button id="actionBtn" onclick="handleAction()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3 px-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm shrink-0">
                     <span>📸</span>
                     <span id="btnText">ถ่ายและวิเคราะห์ AI</span>
                 </button>
@@ -84,7 +88,7 @@
                 });
                 video.srcObject = stream;
             } catch (err) {
-                alert("กรุณาอนุญาตการใช้งานกล้องในเบราว์เซอร์มือถือ");
+                alert("กรุณาอนุญาตการใช้งานกล้องในเบราว์เซอร์");
             }
         }
 
@@ -99,11 +103,10 @@
 
         async function captureAndAnalyze() {
             isAnalyzing = true;
-            btnText.innerText = "กำลังประมวลผลอย่างเร็ว...";
+            btnText.innerText = "กำลังประมวลผล...";
             actionBtn.disabled = true;
             actionBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-            // ย่อขนาดภาพให้ไม่เกิน 640px เพื่อลดการส่งข้อมูล (เร็วขึ้น 10 เท่า)
             const MAX_WIDTH = 640;
             let scale = Math.min(1, MAX_WIDTH / (video.videoWidth || 640));
             canvas.width = (video.videoWidth || 640) * scale;
@@ -112,7 +115,6 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // บีบอัดภาพ JPEG 60%
             const imageDataUrl = canvas.toDataURL('image/jpeg', 0.6);
             imagePreview.src = imageDataUrl;
             imagePreview.classList.remove('hidden');
@@ -120,12 +122,12 @@
             targetGuide.classList.add('hidden');
 
             statusText.innerText = "กำลังวิเคราะห์...";
-            statusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping";
+            statusDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
 
             resultContainer.innerHTML = `
-                <div class="flex items-center justify-center py-6 text-emerald-400 gap-2">
-                    <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span>กำลังวิเคราะห์กุ้ง...</span>
+                <div class="flex items-center justify-center py-4 text-emerald-400 gap-2 text-xs">
+                    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span>วิเคราะห์กุ้ง...</span>
                 </div>
             `;
 
@@ -145,22 +147,22 @@
                 displayResults(data);
 
                 isCaptured = true;
-                btnText.innerText = "🔄 ส่องกุ้งตัวถัดไป (เปิดกล้องใหม่)";
-                actionBtn.className = "w-full bg-sky-500 hover:bg-sky-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base";
+                btnText.innerText = "🔄 ส่องตัวถัดไป";
+                actionBtn.className = "w-full bg-sky-500 hover:bg-sky-400 active:scale-[0.98] text-slate-950 font-bold py-3 px-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm shrink-0";
                 
                 statusText.innerText = "วิเคราะห์เสร็จสิ้น";
-                statusDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500";
+                statusDot.className = "w-2 h-2 rounded-full bg-blue-500";
 
             } catch (err) {
                 resultContainer.innerHTML = `
-                    <div class="text-rose-400 text-xs bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
-                        <p class="font-bold">❌ เกิดข้อผิดพลาดในการเชื่อมต่อ</p>
-                        <p class="mt-1">กรุณาตรวจสอบสัญญาณอินเทอร์เน็ต หรือลองกดถ่ายใหม่อีกครั้ง</p>
+                    <div class="text-rose-400 text-xs bg-rose-500/10 p-2 rounded border border-rose-500/20">
+                        <p class="font-bold">❌ เชื่อมต่อล้มเหลว</p>
+                        <p class="mt-0.5">กรุณากดลองใหม่อีกครั้ง</p>
                     </div>
                 `;
                 isCaptured = true;
                 btnText.innerText = "🔄 ลองใหม่อีกครั้ง";
-                actionBtn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg";
+                actionBtn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 px-3 rounded-xl shadow-lg text-sm shrink-0";
             } finally {
                 isAnalyzing = false;
                 actionBtn.disabled = false;
@@ -173,30 +175,30 @@
 
             if (predictions.length === 0) {
                 resultContainer.innerHTML = `
-                    <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-amber-300 text-xs">
+                    <div class="bg-amber-500/10 border border-amber-500/30 rounded p-2 text-amber-300 text-xs">
                         <p class="font-bold">⚠️ ไม่พบกุ้งในกรอบ</p>
-                        <p class="mt-1">กรุณาวางกุ้ง 1 ตัวให้อยู่ในกรอบเป้าเล็งแล้วลองถ่ายใหม่อีกครั้ง</p>
+                        <p class="mt-0.5">วางกุ้งให้อยู่ในกรอบแล้วถ่ายใหม่</p>
                     </div>
                 `;
                 return;
             }
 
-            let html = `<div class="space-y-3">`;
+            let html = `<div class="space-y-2">`;
             predictions.forEach((pred) => {
                 const confPercent = Math.round((pred.confidence || 0) * 100);
                 const stageName = pred.stage_name || pred.class || "ไม่ระบุระยะ";
                 const forecast = pred.hatch_forecast || "ไม่สามารถประมาณการได้";
 
                 html += `
-                    <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-slate-400">ระยะพัฒนาการ:</span>
-                            <span class="text-xs text-sky-300 bg-sky-950 px-2 py-0.5 rounded-md border border-sky-800">ความมั่นใจ ${confPercent}%</span>
+                    <div class="bg-slate-800/90 p-2 rounded-lg border border-slate-700">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] text-slate-400">ระยะพัฒนาการ:</span>
+                            <span class="text-[10px] text-sky-300 bg-sky-950 px-1.5 py-0.5 rounded border border-sky-800">${confPercent}%</span>
                         </div>
-                        <p class="text-base font-bold text-emerald-400 mb-2">${stageName}</p>
-                        <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between">
-                            <span class="text-xs text-slate-400">🗓️ พยากรณ์วันฟัก:</span>
-                            <span class="text-xs font-bold text-amber-300">${forecast}</span>
+                        <p class="text-xs font-bold text-emerald-400 mb-1">${stageName}</p>
+                        <div class="pt-1 border-t border-slate-700/60 flex items-center justify-between">
+                            <span class="text-[10px] text-slate-400">🗓️ ฟักไข่:</span>
+                            <span class="text-[11px] font-bold text-amber-300">${forecast}</span>
                         </div>
                     </div>
                 `;
@@ -213,13 +215,13 @@
             targetGuide.classList.remove('hidden');
 
             btnText.innerText = "📸 ถ่ายและวิเคราะห์ AI";
-            actionBtn.className = "w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base";
+            actionBtn.className = "w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3 px-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm shrink-0";
 
-            statusText.innerText = "กล้องส่องกุ้งพร้อมทำงาน";
-            statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+            statusText.innerText = "กล้องพร้อมทำงาน";
+            statusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
 
             resultContainer.innerHTML = `
-                <p class="text-sm text-slate-400 italic text-center">จัดตำแหน่งกุ้งในกรอบ แล้วกดถ่ายรูปเพื่อวิเคราะห์</p>
+                <p class="text-xs text-slate-400 italic text-center">วางกุ้งในกรอบ แล้วกดปุ่มถ่ายรูป</p>
             `;
         }
 
