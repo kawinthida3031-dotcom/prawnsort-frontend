@@ -13,21 +13,14 @@
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-2 sm:p-4 select-none">
 
-    <!-- คอนเทนเนอร์หลัก (ดีไซน์เดิมที่คุณคุ้นเคย) -->
+    <!-- โครงสร้างคอนเทนเนอร์หลักเดิมตามภาพ 100% -->
     <div class="w-full max-w-5xl h-[90vh] bg-slate-900 rounded-3xl border border-slate-800 p-3 sm:p-4 flex flex-col md:flex-row gap-4 shadow-2xl">
         
-        <!-- ฝั่งซ้าย: หน้าจอกล้องส่องสด -->
+        <!-- ฝั่งซ้าย: กล้องส่องสด -->
         <div class="relative flex-1 bg-black rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
             <video id="cameraStream" autoplay playsinline class="w-full h-full object-cover"></video>
             <img id="imagePreview" class="w-full h-full object-cover hidden" alt="Captured Shrimp">
             <canvas id="canvas" class="hidden"></canvas>
-
-            <!-- กรอบเป้าเล็งส่องกุ้งทีละตัว -->
-            <div id="targetGuide" class="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <div class="w-64 h-40 border-2 border-emerald-400/60 rounded-2xl border-dashed flex items-center justify-center bg-emerald-500/5">
-                    <span class="text-xs text-emerald-300 bg-slate-950/80 px-3 py-1 rounded-full shadow-lg">วางกุ้งให้อยู่ในกรอบนี้</span>
-                </div>
-            </div>
 
             <!-- สถานะกล้อง -->
             <div class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 border border-slate-700">
@@ -36,7 +29,7 @@
             </div>
         </div>
 
-        <!-- ฝั่งขวา: แผงควบคุมและแสดงผล (ดีไซน์เดิม) -->
+        <!-- ฝั่งขวา: แผงแสดงผลและปุ่มกด -->
         <div class="w-full md:w-96 flex flex-col justify-between bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80">
             <div>
                 <!-- Header -->
@@ -78,13 +71,12 @@
         const btnText = document.getElementById('btnText');
         const imagePreview = document.getElementById('imagePreview');
         const resultContainer = document.getElementById('resultContainer');
-        const targetGuide = document.getElementById('targetGuide');
         const statusText = document.getElementById('statusText');
         const statusDot = document.getElementById('statusDot');
 
         let isAnalyzing = false;
-        let isCaptured = false;
 
+        // เริ่มเปิดกล้อง
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -99,11 +91,7 @@
 
         async function handleAction() {
             if (isAnalyzing) return;
-            if (!isCaptured) {
-                await captureAndAnalyze();
-            } else {
-                resetToCamera();
-            }
+            await captureAndAnalyze();
         }
 
         async function captureAndAnalyze() {
@@ -112,7 +100,7 @@
             actionBtn.disabled = true;
             actionBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-            // ย่อขนาดภาพและบีบอัดให้เหลือขนาดเล็กเพื่อให้ส่งไวเสร็จภายในไม่กี่วินาที
+            // ย่อขนาดภาพเป็น 640px และบีบอัด JPEG 60% เพื่อส่งข้อมูลเร็วขึ้นหลายเท่า
             const MAX_WIDTH = 640;
             let scale = Math.min(1, MAX_WIDTH / (video.videoWidth || 640));
             canvas.width = (video.videoWidth || 640) * scale;
@@ -125,7 +113,6 @@
             imagePreview.src = imageDataUrl;
             imagePreview.classList.remove('hidden');
             video.classList.add('hidden');
-            targetGuide.classList.add('hidden');
 
             statusText.innerText = "กำลังประมวลผล AI...";
             statusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping";
@@ -152,10 +139,6 @@
                 const data = await response.json();
                 displayResults(data);
 
-                isCaptured = true;
-                btnText.innerText = "🔄 ส่องกุ้งตัวถัดไป";
-                actionBtn.className = "w-full bg-sky-500 hover:bg-sky-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base";
-                
                 statusText.innerText = "วิเคราะห์เสร็จสิ้น";
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500";
 
@@ -166,16 +149,23 @@
                         <p>ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้</p>
                     </div>
                 `;
-                isCaptured = true;
-                btnText.innerText = "🔄 ลองใหม่อีกครั้ง";
-                actionBtn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg";
             } finally {
                 isAnalyzing = false;
                 actionBtn.disabled = false;
                 actionBtn.classList.remove("opacity-60", "cursor-not-allowed");
+                btnText.innerText = "📸 ถ่ายและวิเคราะห์ AI";
+                
+                // คืนค่าแสดงกล้องสดหลังจากวิเคราะห์เสร็จสิ้นเพื่อให้ส่องตัวต่อไปได้
+                setTimeout(() => {
+                    imagePreview.classList.add('hidden');
+                    video.classList.remove('hidden');
+                    statusText.innerText = "กล้องส่องกุ้งพร้อมทำงาน";
+                    statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                }, 3000);
             }
         }
 
+        // แสดงผลระยะ ความมั่นใจ และพยากรณ์วันฟัก
         function displayResults(data) {
             const predictions = data.predictions || [];
 
@@ -183,7 +173,7 @@
                 resultContainer.innerHTML = `
                     <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-amber-300 text-xs">
                         <p class="font-bold">⚠️ ไม่พบกุ้งในภาพ</p>
-                        <p class="mt-1">กรุณาวางกุ้งให้อยู่ในกรอบแล้วลองถ่ายใหม่</p>
+                        <p class="mt-1">กรุณาวางกุ้งให้อยู่ในตำแหน่งแล้วลองถ่ายใหม่</p>
                     </div>
                 `;
                 return;
@@ -196,39 +186,16 @@
                 const forecast = pred.hatch_forecast || "ไม่สามารถประมาณการได้";
 
                 html += `
-                    <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs text-slate-400">ระยะพัฒนาการ:</span>
-                            <span class="text-xs font-semibold text-sky-300">${confPercent}%</span>
-                        </div>
-                        <p class="text-sm font-bold text-emerald-400 mb-1">${stageName}</p>
-                        <div class="flex justify-between items-center pt-1 border-t border-slate-700">
-                            <span class="text-xs text-slate-400">🗓️ พยากรณ์วันฟัก:</span>
-                            <span class="text-xs font-bold text-amber-300">${forecast}</span>
-                        </div>
+                    <div class="space-y-1">
+                        <p class="text-sm font-bold text-emerald-400">ระยะ: <span class="text-white">${stageName}</span></p>
+                        <p class="text-xs text-sky-300 font-semibold">ความมั่นใจ: ${confPercent}%</p>
+                        <p class="text-xs text-amber-300 font-semibold pt-1 border-t border-slate-800">🗓️ พยากรณ์วันฟัก: ${forecast}</p>
                     </div>
                 `;
             });
             html += `</div>`;
 
             resultContainer.innerHTML = html;
-        }
-
-        function resetToCamera() {
-            isCaptured = false;
-            imagePreview.classList.add('hidden');
-            video.classList.remove('hidden');
-            targetGuide.classList.remove('hidden');
-
-            btnText.innerText = "📸 ถ่ายและวิเคราะห์ AI";
-            actionBtn.className = "w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base";
-
-            statusText.innerText = "กล้องส่องกุ้งพร้อมทำงาน";
-            statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-
-            resultContainer.innerHTML = `
-                <p class="text-sm text-slate-400 italic">กดปุ่มด้านล่างเพื่อถ่ายรูปและเริ่มจำแนกระยะกุ้ง</p>
-            `;
         }
 
         window.addEventListener('load', initCamera);
