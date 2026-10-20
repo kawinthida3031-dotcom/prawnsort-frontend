@@ -9,33 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Prompt', sans-serif; background-color: #020617; margin: 0; padding: 0; overflow: hidden; }
-        
-        /* โครงสร้างเลย์เอาต์แนวนอน ซ้าย-ขวา ล็อกสัดส่วนพอดีจอ */
-        .farm-container {
-            display: flex;
-            flex-direction: row;
-            width: 100vw;
-            height: 100vh;
-            box-sizing: border-box;
-            gap: 10px;
-            padding: 10px;
-            background-color: #0f172a;
-        }
-
-        /* หน้าจอแจ้งเตือนเมื่อถือมือถือแนวตั้ง */
-        #rotateWarning {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background-color: #020617;
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-
+        .farm-container { display: flex; flex-direction: row; width: 100vw; height: 100vh; box-sizing: border-box; gap: 10px; padding: 10px; background-color: #0f172a; }
+        #rotateWarning { display: none; position: fixed; inset: 0; background-color: #020617; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         @media screen and (orientation: portrait) {
             #rotateWarning { display: flex !important; }
             .farm-container { display: none !important; }
@@ -44,45 +19,39 @@
 </head>
 <body class="select-none text-white">
 
-    <!-- หน้าจอแจ้งเตือนแนวตั้ง -->
+    <!-- หน้าจอเตือนให้พลิกแนวนอน -->
     <div id="rotateWarning">
         <div class="bg-slate-900 border border-emerald-500/40 p-6 rounded-2xl shadow-2xl max-w-sm w-full space-y-4">
             <div class="text-4xl animate-bounce">📱 🔄 ➡️ 💻</div>
             <h2 class="text-lg font-bold text-emerald-400">กรุณาพลิกโทรศัพท์เป็นแนวนอน</h2>
-            <p class="text-xs text-slate-300 leading-relaxed">
-                แอปพลิเคชัน <b>Prawnsort</b> ออกแบบมาสำหรับใช้งานหน้าฟาร์มในโหมดแนวนอน เพื่อให้กล้องส่องกุ้งและแผงควบคุมแสดงผลได้อย่างแม่นยำที่สุด
-            </p>
+            <p class="text-xs text-slate-300 leading-relaxed">แอปพลิเคชัน <b>Prawnsort</b> ออกแบบมาสำหรับใช้งานหน้าฟาร์มในโหมดแนวนอน เพื่อให้กล้องส่องกุ้งและแผงควบคุมแสดงผลได้อย่างแม่นยำที่สุด</p>
         </div>
     </div>
 
     <!-- คอนเทนเนอร์หลักแนวนอน -->
     <div class="farm-container">
-        
         <!-- ฝั่งซ้าย: กล้องส่องกุ้ง -->
         <div class="relative flex-1 h-full bg-black rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
             <video id="cameraStream" autoplay playsinline class="w-full h-full object-cover"></video>
             <img id="imagePreview" class="w-full h-full object-cover hidden" alt="Captured Shrimp">
             <canvas id="canvas" class="hidden"></canvas>
 
-            <!-- กรอบเป้าเล็งกุ้ง -->
             <div id="targetGuide" class="absolute inset-0 pointer-events-none flex items-center justify-center">
                 <div class="w-60 h-36 border-2 border-emerald-400/60 rounded-xl border-dashed flex items-center justify-center bg-emerald-500/5">
                     <span class="text-xs text-emerald-300 bg-slate-950/80 px-3 py-1 rounded-full shadow-lg">วางกุ้งให้อยู่ในกรอบนี้</span>
                 </div>
             </div>
 
-            <!-- สถานะการทำงาน -->
             <div class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 border border-slate-700 z-10">
                 <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="statusText">กล้องส่องกุ้งพร้อมทำงาน</span>
             </div>
         </div>
 
-        <!-- ฝั่งขวา: ผลการวิเคราะห์และปุ่มกด -->
+        <!-- ฝั่งขวา: แผงควบคุมและแสดงผล 2 ช่องชัดเจน -->
         <div class="w-80 lg:w-96 h-full flex flex-col justify-between bg-slate-950/95 rounded-xl p-3 lg:p-4 border border-slate-800/80 shrink-0">
             <div class="flex flex-col h-full justify-between">
                 <div>
-                    <!-- Header -->
                     <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
                         <div class="flex items-center gap-2">
                             <span class="text-xl">🦐</span>
@@ -93,7 +62,6 @@
 
                     <p class="text-[11px] text-slate-400 mb-2">ระบบจำแนกระยะกุ้งฝอยสำหรับใช้ในฟาร์ม</p>
 
-                    <!-- กล่องแสดงผล 2 ช่องแยกชัดเจน -->
                     <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-800 min-h-[160px] max-h-[260px] overflow-y-auto flex flex-col justify-center">
                         <h3 class="text-xs text-slate-400 mb-2 font-medium">ผลการวิเคราะห์:</h3>
                         <div id="resultContainer" class="space-y-2">
@@ -102,7 +70,6 @@
                     </div>
                 </div>
 
-                <!-- ปุ่มกดถ่าย/ส่องตัวถัดไป -->
                 <button id="actionBtn" onclick="handleAction()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm shrink-0 cursor-pointer">
                     <span>📸</span>
                     <span id="btnText">ถ่ายและวิเคราะห์ AI</span>
@@ -137,8 +104,7 @@
             } catch (err) {
                 alert("ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตการใช้งานกล้องในเบราว์เซอร์");
             }
-            
-            // สะกิดปลุกเซิร์ฟเวอร์ด่วนล่วงหน้าทันทีที่เปิดหน้าเว็บ
+            // ปลุกเซิร์ฟเวอร์ล่วงหน้าทันทีที่เปิดหน้าเว็บ
             fetch(`${API_URL}/ping`).catch(() => {});
         }
 
@@ -157,16 +123,14 @@
             actionBtn.disabled = true;
             actionBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-            // ย่อขนาดภาพให้สอดคล้องกับขนาดโมเดล AI (416px) เพื่อให้ประมวลผลเร็วที่สุดในระดับมิลลิวินาที
-            const TARGET_SIZE = 416;
+            const TARGET_SIZE = 320;
             canvas.width = TARGET_SIZE;
             canvas.height = TARGET_SIZE;
 
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, TARGET_SIZE, TARGET_SIZE);
 
-            // บีบอัดเป็น JPEG คุณภาพ 0.5 (ขนาดไฟล์เพียง ~30KB)
-            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.4);
             imagePreview.src = imageDataUrl;
             imagePreview.classList.remove('hidden');
             video.classList.add('hidden');
@@ -221,7 +185,6 @@
             }
         }
 
-        // แสดงผลแบ่ง 2 ช่องชัดเจน
         function displayResults(data) {
             const predictions = data.predictions || [];
 
@@ -242,13 +205,10 @@
 
                 html += `
                     <div class="bg-slate-800/90 p-3 rounded-lg border border-slate-700 space-y-2.5">
-                        <!-- ช่องที่ 1: ระยะพัฒนาการ -->
                         <div class="bg-slate-900/60 p-2 rounded-md border border-slate-700/50">
                             <span class="text-[10px] text-slate-400 font-medium block mb-0.5">ระยะพัฒนาการ</span>
                             <p class="text-xs font-bold text-emerald-400 leading-snug">${stageName}</p>
                         </div>
-                        
-                        <!-- ช่องที่ 2: พยากรณ์วันฟัก -->
                         <div class="bg-slate-900/60 p-2 rounded-md border border-slate-700/50 flex justify-between items-center">
                             <span class="text-[10px] text-slate-400 font-medium">🗓️ พยากรณ์วันฟัก</span>
                             <span class="text-xs font-bold text-amber-300">${forecast}</span>
