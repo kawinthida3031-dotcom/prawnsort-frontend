@@ -124,14 +124,14 @@
             actionBtn.classList.add("opacity-60", "cursor-not-allowed");
 
             // ปรับขนาดภาพเล็กเพื่อประมวลผลเร็วระดับมิลลิวินาที
-            const TARGET_SIZE = 320;
+            const TARGET_SIZE = 416;
             canvas.width = TARGET_SIZE;
             canvas.height = TARGET_SIZE;
 
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, TARGET_SIZE, TARGET_SIZE);
 
-            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.35);
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
             imagePreview.src = imageDataUrl;
             imagePreview.classList.remove('hidden');
             video.classList.add('hidden');
