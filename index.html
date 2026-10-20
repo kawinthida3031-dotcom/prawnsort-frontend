@@ -8,29 +8,73 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; }
+        body { font-family: 'Prompt', sans-serif; background-color: #020617; }
+        /* บังคับให้หน้าจอจัดวางแบบแนวนอน ซ้าย-ขวา เสมอ แม้เปิดในมือถือ */
+        .farm-container {
+            display: flex;
+            flex-direction: row;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100%;
+            max-height: 100%;
+            box-sizing: border-box;
+            gap: 12px;
+            padding: 12px;
+            background-color: #0f172a;
+        }
+        .camera-pane {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-pane {
+            width: 380px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: rgba(3, 7, 18, 0.95);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(30, 41, 59, 0.8);
+            box-sizing: border-box;
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-white h-screen w-screen overflow-hidden flex items-center justify-center p-2 select-none">
+<body class="overflow-hidden m-0 p-0 select-none text-white">
 
-    <!-- คอนเทนเนอร์หลัก ล็อกการแสดงผลแบบแนวนอน (ซ้าย-ขวา) ตามภาพที่ต้องการ 100% -->
-    <div class="w-full h-full max-w-6xl max-h-[95vh] bg-slate-900 rounded-2xl border border-slate-800 p-3 flex flex-row gap-3 shadow-2xl">
+    <!-- คอนเทนเนอร์หลักแนวนอน (ซ้ายกล้อง - ขวาแผงควบคุม) -->
+    <div class="farm-container">
         
-        <!-- ฝั่งซ้าย: หน้าจอกล้องส่องสด (เต็มพื้นที่ฝั่งซ้ายเหมือนภาพขวา) -->
-        <div class="relative flex-1 h-full bg-black rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+        <!-- ฝั่งซ้าย: หน้าจอกล้องส่องสด -->
+        <div class="camera-pane">
             <video id="cameraStream" autoplay playsinline class="w-full h-full object-cover"></video>
             <img id="imagePreview" class="w-full h-full object-cover hidden" alt="Captured Shrimp">
             <canvas id="canvas" class="hidden"></canvas>
 
+            <!-- กรอบเป้าเล็งส่องกุ้ง -->
+            <div id="targetGuide" class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div class="w-64 h-40 border-2 border-emerald-400/60 rounded-xl border-dashed flex items-center justify-center bg-emerald-500/5">
+                    <span class="text-xs text-emerald-300 bg-slate-950/80 px-3 py-1 rounded-full shadow-lg">วางกุ้งให้อยู่ในกรอบนี้</span>
+                </div>
+            </div>
+
             <!-- สถานะกล้อง -->
-            <div class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 border border-slate-700">
+            <div class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 border border-slate-700 z-10">
                 <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="statusText">กล้องส่องกุ้งพร้อมทำงาน</span>
             </div>
         </div>
 
-        <!-- ฝั่งขวา: แผงควบคุมและแสดงผล (เหมือนภาพขวา 100%) -->
-        <div class="w-96 h-full flex flex-col justify-between bg-slate-950/90 rounded-xl p-4 border border-slate-800/80">
+        <!-- ฝั่งขวา: แผงควบคุมและแสดงผล -->
+        <div class="control-pane">
             <div class="flex flex-col h-full justify-between">
                 <div>
                     <!-- Header -->
@@ -39,13 +83,13 @@
                             <span class="text-2xl">🦐</span>
                             <h1 class="font-bold text-lg text-emerald-400">Prawnsort</h1>
                         </div>
-                        <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700">Landscape Mode</span>
+                        <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">Landscape Mode</span>
                     </div>
 
                     <p class="text-xs text-slate-400 mb-3">ระบบจำแนกระยะกุ้งฝอยสำหรับใช้ในฟาร์ม</p>
 
                     <!-- กล่องแสดงผลการวิเคราะห์ -->
-                    <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 min-h-[180px] max-h-[260px] overflow-y-auto flex flex-col justify-center">
+                    <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 min-h-[180px] max-h-[280px] overflow-y-auto flex flex-col justify-center">
                         <h3 class="text-xs text-slate-400 mb-2 font-medium">ผลการวิเคราะห์:</h3>
                         <div id="resultContainer" class="space-y-2">
                             <p class="text-xs text-slate-400 italic">กดปุ่มด้านล่างเพื่อถ่ายรูปและเริ่มจำแนก</p>
@@ -54,7 +98,7 @@
                 </div>
 
                 <!-- ปุ่มควบคุมการทำงาน -->
-                <button id="actionBtn" onclick="handleAction()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base shrink-0">
+                <button id="actionBtn" onclick="handleAction()" class="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base shrink-0 cursor-pointer">
                     <span>📸</span>
                     <span id="btnText">ถ่ายและวิเคราะห์ AI</span>
                 </button>
@@ -71,6 +115,7 @@
         const btnText = document.getElementById('btnText');
         const imagePreview = document.getElementById('imagePreview');
         const resultContainer = document.getElementById('resultContainer');
+        const targetGuide = document.getElementById('targetGuide');
         const statusText = document.getElementById('statusText');
         const statusDot = document.getElementById('statusDot');
 
@@ -104,7 +149,7 @@
             actionBtn.disabled = true;
             actionBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-            // ย่อขนาดภาพและบีบอัดเพื่อให้ส่งข้อมูลไวขึ้นเสร็จภายในไม่กี่วินาที
+            // บีบอัดและย่อภาพให้ส่งข้อมูลไวภายในไม่กี่วินาที
             const MAX_WIDTH = 640;
             let scale = Math.min(1, MAX_WIDTH / (video.videoWidth || 640));
             canvas.width = (video.videoWidth || 640) * scale;
@@ -117,6 +162,7 @@
             imagePreview.src = imageDataUrl;
             imagePreview.classList.remove('hidden');
             video.classList.add('hidden');
+            targetGuide.classList.add('hidden');
 
             statusText.innerText = "กำลังประมวลผล AI...";
             statusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping";
@@ -145,7 +191,7 @@
 
                 isCaptured = true;
                 btnText.innerText = "🔄 ส่องกุ้งตัวถัดไป";
-                actionBtn.className = "w-full bg-sky-500 hover:bg-sky-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base shrink-0";
+                actionBtn.className = "w-full bg-sky-500 hover:bg-sky-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base shrink-0 cursor-pointer";
                 
                 statusText.innerText = "วิเคราะห์เสร็จสิ้น";
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500";
@@ -159,7 +205,7 @@
                 `;
                 isCaptured = true;
                 btnText.innerText = "🔄 ลองใหม่อีกครั้ง";
-                actionBtn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg shrink-0";
+                actionBtn.className = "w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg shrink-0 cursor-pointer";
             } finally {
                 isAnalyzing = false;
                 actionBtn.disabled = false;
@@ -174,7 +220,7 @@
                 resultContainer.innerHTML = `
                     <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-amber-300 text-xs">
                         <p class="font-bold">⚠️ ไม่พบกุ้งในภาพ</p>
-                        <p class="mt-1">วางกุ้งให้อยู่ในตำแหน่งแล้วลองถ่ายใหม่</p>
+                        <p class="mt-1">วางกุ้งให้อยู่ในกรอบแล้วลองถ่ายใหม่</p>
                     </div>
                 `;
                 return;
@@ -189,7 +235,7 @@
                 html += `
                     <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs text-slate-400">ะยะพัฒนาการ:</span>
+                            <span class="text-xs text-slate-400">ระยะพัฒนาการ:</span>
                             <span class="text-xs font-semibold text-sky-300">${confPercent}%</span>
                         </div>
                         <p class="text-sm font-bold text-emerald-400 mb-1">${stageName}</p>
@@ -209,11 +255,12 @@
             isCaptured = false;
             imagePreview.classList.add('hidden');
             video.classList.remove('hidden');
+            targetGuide.classList.remove('hidden');
 
             btnText.innerText = "📸 ถ่ายและวิเคราะห์ AI";
-            actionBtn.className = "w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base shrink-0";
+            actionBtn.className = "w-full bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base shrink-0 cursor-pointer";
 
-            statusText.innerText = "กล้องพร้อมทำงาน";
+            statusText.innerText = "กล้องส่องกุ้งพร้อมทำงาน";
             statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
 
             resultContainer.innerHTML = `
